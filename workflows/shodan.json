@@ -1,0 +1,732 @@
+{
+  "active": true,
+  "connections": {
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SSH": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "SSH",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2024-05-30T22:26:26.999Z",
+  "id": "fBI7CUhzGVQSdYJU",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "shodan",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d7f6860e-5009-4b33-bfe0-e6e455694ade",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.shodan.io/shodan/host/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "5Bd9M4Ulbl7oyVrBl4Ng95gVJmGvBLZQ"
+            },
+            {
+              "name": "query",
+              "value": "={{ $json.shodan_query }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "504a1165-7902-4850-b0f9-87a9a4f7b8ab",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "matches",
+        "options": {}
+      },
+      "id": "d9397255-600b-449c-a4d6-dda8a020998c",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=./smbpentest.sh {{ $json.ip_str }} {{ $json._shodan.id }}",
+        "cwd": "/home/pegi-4"
+      },
+      "id": "19d51cda-13e8-46e4-bbbe-ca7176bd70e3",
+      "name": "SSH",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2520,
+        100
+      ],
+      "credentials": {
+        "sshPassword": {
+          "id": "tSTe249D1PwBIrS7",
+          "name": "SSH creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet anonymous_login_ip=[];\nfor (const item of $input.all()) {\n     const ip = /IP Address: [0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/;\n  const shodan_hash = /Shodan Hash:/\n    const ip_addr = item.json.stdout.match(ip);\n    const shodan = item.json.stdout.split('Hash:');\n  if(ip_addr && shodan ){\n      anonymous_login_ip.push({ip:ip_addr[0].split('Address:').pop(),shodan:shodan.pop().trim()});\n  }\n    \n}\n\nreturn {'ips':anonymous_login_ip}"
+      },
+      "id": "40381687-4a43-4613-b6b4-cf2e98b75a2e",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3640,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const africa_country_codes= [\"DZ\",\"AO\", \"BJ\",\"BW\",\"BF\",\"BI\",\"CM\",\"CV\",\"CF\",\"TD\",\"KM\",\"CG\",\"CD\",\"CI\",\"DJ\",\"EG\",\"GQ\",\"ER\",\"ET\",\"GA\",\"GM\",\"GH\",\"GN\",\"GW\",\"KE\",\"LS\",\"LR\",\"LY\",\"MG\",\"ML\",\"MW\",\"MR\",\"MU\",\"YT\",\"MA\",\"MZ\",\"NA\",\"NE\",\"NG\",\"RE\",\"RW\",\"ST\",\"SN\",\"SC\",\"SL\",\"SO\",\"ZA\",\"SS\",\"SD\",\"SZ\",\"TZ\",\"TG\",\"TN\",\"UG\",\"EH\",\"ZM\",\"ZW\"]\nreturn {'shodan_query':`country:${africa_country_codes.join(',').toLowerCase()} port:445`  }"
+      },
+      "id": "550ecaaa-9a4f-4418-bc36-90e5ec83c78f",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "ef71c7d3-0ef0-437f-a4ff-45e118030104",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "=NT_STATUS_ACCESS_DENIED",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "fa2cf1e7-ae45-4ad7-8f6b-74e461e7d3f2",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "NT_STATUS_CONNECTION_DISCONNECTED",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "6251daa7-ac17-4703-839c-88c45f6ebf99",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "NT_STATUS_LOGON_TYPE_NOT_GRANTED",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "015b39c4-1c01-4e34-b5c9-3521e3cd3936",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "NT_STATUS_IO_TIMEOUT",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "4e88785e-8470-4a21-8b1d-548d259e35e9",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "NT_STATUS_LOGON_FAILURE",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "2855b1c2-d497-404a-9049-bf3886c7db24",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "NT_STATUS_NOT_SUPPORTED",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b3217f94-5a89-4672-888d-2af43991ade2",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2820,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Workflow Shodan - SMB Shares\nThis workflow will automatically fetch from all devices having smb share open as a service and tried to check Anonymous login on each for finally revealing which devices tolerates anonymous login with their corresponding IP addresses.\n\n### Setup\n",
+        "height": 464.79920462713443,
+        "width": 389.78906250000017
+      },
+      "id": "c20223dd-3bdc-49e4-bf4a-76cf4497ef9c",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        340,
+        60
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8aa2347-55b2-41d8-a139-9141c6cb921a",
+              "name": "stdout",
+              "value": "={{ $json.stdout }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f1723a3d-6a82-4014-8c36-e9b887b784af",
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        3180,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ce2d5c4c-25e7-44ef-b565-39ddc543507b",
+              "name": "_shodan.id",
+              "value": "={{ $json._shodan.id }}",
+              "type": "string"
+            },
+            {
+              "id": "63b66eab-c1a5-4a81-9add-170ff99a3952",
+              "name": "asn",
+              "value": "={{ $json.asn }}",
+              "type": "string"
+            },
+            {
+              "id": "68af4fa2-25f9-4be8-9ead-848221222976",
+              "name": "hash",
+              "value": "={{ $json.hash }}",
+              "type": "number"
+            },
+            {
+              "id": "60e01c7d-c563-46df-ac01-db6f2e0ff854",
+              "name": "isp",
+              "value": "={{ $json.isp }}",
+              "type": "string"
+            },
+            {
+              "id": "1d218c04-0fb3-49f0-a6e6-709293dea618",
+              "name": "smb.os",
+              "value": "={{ $json.smb.os }}",
+              "type": "string"
+            },
+            {
+              "id": "006fac5e-e016-4a48-97b9-e347d4b131d1",
+              "name": "smb.software",
+              "value": "={{ $json.smb.software }}",
+              "type": "string"
+            },
+            {
+              "id": "5539e790-b60b-44c2-b199-1b8609dc7c20",
+              "name": "smb.shares",
+              "value": "={{ $json.smb.shares }}",
+              "type": "string"
+            },
+            {
+              "id": "817a9b1c-e029-447b-8441-f64dbb98cde8",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "object"
+            },
+            {
+              "id": "e61b5140-685b-4c31-a8dc-2f970a712c13",
+              "name": "vulns",
+              "value": "={{ $json.vulns }}",
+              "type": "string"
+            },
+            {
+              "id": "fe8e813e-1017-4376-9ce7-2931e981be84",
+              "name": "ip_str",
+              "value": "={{ $json.ip_str }}",
+              "type": "string"
+            },
+            {
+              "id": "b763646c-1666-482d-ad9b-c4e50a35cf87",
+              "name": "hostnames",
+              "value": "={{ $json.hostnames }}",
+              "type": "array"
+            },
+            {
+              "id": "f94e35c3-d99a-4188-940b-7e974a4e0817",
+              "name": "port",
+              "value": "={{ $json.port }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b090bd42-7419-45ea-8a9f-e2bd06585502",
+      "name": "Edit Fields3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        1500,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72da91b1-1015-4c43-bff5-5e68f4f74024",
+              "name": "_shodan.id",
+              "value": "={{ $json._shodan.id }}",
+              "type": "string"
+            },
+            {
+              "id": "eb5789f7-14c6-456d-bd02-47012259040e",
+              "name": "asn",
+              "value": "={{ $json.asn }}",
+              "type": "string"
+            },
+            {
+              "id": "66de331b-1d4f-4b3d-bfd7-9a0dea2d3f4f",
+              "name": "hash",
+              "value": "={{ $json.hash }}",
+              "type": "number"
+            },
+            {
+              "id": "95549d3e-c9d3-470f-aee5-3e93c20cae7d",
+              "name": "isp",
+              "value": "={{ $json.isp }}",
+              "type": "string"
+            },
+            {
+              "id": "406fc179-0b13-4164-a4f0-a290ca1e6acc",
+              "name": "smb",
+              "value": "={{ $json.smb }}",
+              "type": "object"
+            },
+            {
+              "id": "7c9d292a-8523-43bf-a03d-b1ff3bfccec6",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "object"
+            },
+            {
+              "id": "e11f5bad-a300-4705-8690-ada0887a863a",
+              "name": "vulns",
+              "value": "={{ $json.vulns }}",
+              "type": "string"
+            },
+            {
+              "id": "0fa5642d-9911-4454-9b7e-81cef7185ed7",
+              "name": "ip_str",
+              "value": "={{ $json.ip_str }}",
+              "type": "string"
+            },
+            {
+              "id": "70bb36de-065c-4896-9352-9b00942dc26f",
+              "name": "hostnames",
+              "value": "={{ $json.hostnames }}",
+              "type": "array"
+            },
+            {
+              "id": "69bb6eb2-35ad-4b08-9810-ed368cf160cd",
+              "name": "port",
+              "value": "={{ $json.port }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8e11601f-2246-44b7-a4ed-b0b6189af442",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        2540,
+        580
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5936ba79-3aec-4deb-9f42-71aa743c686c",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        3280,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let ips = $input.all()[0]\nlet res = $input.all().slice(1)\nlet data = []\n\nfor(const item of ips.json.ips){\n  const filter = res.filter(el=>{\n    return item.shodan === el.json._shodan.id\n  })\n  data.push(...filter)\n}\n\nreturn data"
+      },
+      "id": "bba7b065-8ddd-42a4-958e-ecad3baa5ac7",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3980,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "##\nHere the aim is to make query toward shodan and fetch banner info about devices having smb port open\n",
+        "height": 457.1644740882123,
+        "width": 422.87289483532953
+      },
+      "id": "f2b7506a-7efa-40b9-932f-f08ef70db29e",
+      "name": "Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1040,
+        -20
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "##\nHere we are trying to execute smb client commands on a remote devices to check if we can logged in into smb as Anonymous user",
+        "height": 457.1644740882123,
+        "width": 422.87289483532953
+      },
+      "id": "d72abd4c-771a-4937-8e98-eaaa6382a45a",
+      "name": "Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2340,
+        -60
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "##\nData has been merge with backed up data here for further usage",
+        "height": 454.61956390857165,
+        "width": 422.87289483532953
+      },
+      "id": "e00c009d-bef8-4561-abab-3f21bcdd1324",
+      "name": "Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2480,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "##\nData has been backed up here for further usage",
+        "height": 480.06866570497886,
+        "width": 422.87289483532953
+      },
+      "id": "df40e55f-564a-49ea-84c7-bcefbda3d741",
+      "name": "Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1700,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "##\nWe are filtering data in order to output all important data related to devices which has smb services and tolerate anonymous authentication",
+        "height": 454.61956390857165,
+        "width": 422.87289483532953
+      },
+      "id": "e5176330-8829-40da-911b-8df04f309885",
+      "name": "Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3020,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "format": true,
+          "encoding": "utf8",
+          "fileName": "shodan_results.json"
+        }
+      },
+      "id": "d0e25b5b-5c36-4d68-973b-d0575f5f2070",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        4320,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "soultonew@groupeiservices.com",
+        "toEmail": "soultonew@groupeiservices.com,ezeckiel.dadjo@groupeiservices.com",
+        "subject": " Résultats de l'analyse Shodan - SMB Shares ouverts autorisant la connexion anonyme",
+        "emailFormat": "text",
+        "text": "J'espère que ce message vous trouve bien. Je tenais à vous informer des résultats d'une récente analyse effectuée avec Shodan concernant les partages SMB ouverts qui autorisent la connexion anonyme.\n\nVous trouverez en pièce jointe un document contenant les détails des résultats obtenus, notamment les adresses IP des machines concernées, les informations sur les partages SMB accessibles et toute autre donnée pertinente.",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data",
+          "ccEmail": ""
+        }
+      },
+      "id": "9fbfbffc-12c5-4b42-bb0b-9b871c3a7b03",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4940,
+        560
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "L64PtJdpDDAghxvW",
+          "name": "SMTP creds"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1,
+                5
+              ]
+            }
+          ]
+        }
+      },
+      "id": "e039a4fe-33e8-443e-8e9d-53778e16c671",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        580,
+        540
+      ]
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrencyRules": []
+    }
+  },
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2024-06-20T14:43:32.000Z",
+  "versionId": "69047098-2d20-4a1d-8994-8cb98d82d232"
+}
